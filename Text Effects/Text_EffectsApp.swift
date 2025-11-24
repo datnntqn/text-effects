@@ -11,7 +11,7 @@ import SwiftUI
 struct Text_EffectsApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
         }
     }
 }
