@@ -50,22 +50,22 @@ class ExportManager {
     // MARK: - Video Export
     
     @MainActor
-    func exportAsVideo(
-        view: AnyView,
+    func exportAsVideo<Content: View>(
+        view: Content,
         duration: Double = 3.0,
-        size: CGSize = CGSize(width: 1080, height: 1920),
-        fps: Int = 30
+        quality: VideoQuality = .hd1080
     ) async -> URL? {
         isExporting = true
-        exportProgress = 0
+        exportProgress = 0.0
+        
+        let fps = 30
+        let size = quality.size
         
         let outputURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("text_effect_\(UUID().uuidString).mp4")
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("mp4")
         
-        // Remove existing file
-        try? FileManager.default.removeItem(at: outputURL)
-        
-        guard let videoWriter = try? AVAssetWriter(outputURL: outputURL, fileType: .mp4) else {
+        guard let videoWriter = try? AVAssetWriter(url: outputURL, fileType: .mp4) else {
             isExporting = false
             return nil
         }
@@ -79,7 +79,11 @@ class ExportManager {
         let videoWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
         let adaptor = AVAssetWriterInputPixelBufferAdaptor(
             assetWriterInput: videoWriterInput,
-            sourcePixelBufferAttributes: nil
+            sourcePixelBufferAttributes: [
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB,
+                kCVPixelBufferWidthKey as String: Int(size.width),
+                kCVPixelBufferHeightKey as String: Int(size.height)
+            ]
         )
         
         videoWriter.add(videoWriterInput)
@@ -87,33 +91,49 @@ class ExportManager {
         videoWriter.startSession(atSourceTime: .zero)
         
         let totalFrames = Int(duration * Double(fps))
-        var frameCount = 0
         
-        let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height))
-        renderer.scale = 2.0
-        
-        while frameCount < totalFrames {
-            if videoWriterInput.isReadyForMoreMediaData {
-                let presentationTime = CMTime(
-                    value: Int64(frameCount),
-                    timescale: Int32(fps)
-                )
-                
-                if let image = renderer.uiImage,
-                   let pixelBuffer = image.pixelBuffer(width: Int(size.width), height: Int(size.height)) {
-                    adaptor.append(pixelBuffer, withPresentationTime: presentationTime)
+        // Render frames on main thread to capture live animations
+        await MainActor.run {
+            Task {
+                for frameCount in 0..<totalFrames {
+                    autoreleasepool {
+                        if videoWriterInput.isReadyForMoreMediaData {
+                            let presentationTime = CMTime(
+                                value: Int64(frameCount),
+                                timescale: Int32(fps)
+                            )
+                            
+                            // Render current animation state
+                            let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height))
+                            renderer.scale = 2.0
+                            
+                            if let image = renderer.uiImage,
+                               let pixelBuffer = image.pixelBuffer(width: Int(size.width), height: Int(size.height)) {
+                                adaptor.append(pixelBuffer, withPresentationTime: presentationTime)
+                            }
+                            
+                            exportProgress = Double(frameCount + 1) / Double(totalFrames)
+                        }
+                        
+                        // Wait for next frame (33ms for 30fps)
+                        Thread.sleep(forTimeInterval: 1.0 / Double(fps))
+                    }
                 }
                 
-                frameCount += 1
-                exportProgress = Double(frameCount) / Double(totalFrames)
+                videoWriterInput.markAsFinished()
+                videoWriter.finishWriting {
+                    Task { @MainActor in
+                        self.isExporting = false
+                        self.lastExportedVideoURL = outputURL
+                    }
+                }
             }
         }
         
-        videoWriterInput.markAsFinished()
-        await videoWriter.finishWriting()
-        
-        isExporting = false
-        lastExportedVideoURL = outputURL
+        // Wait for completion
+        while isExporting {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+        }
         
         return outputURL
     }

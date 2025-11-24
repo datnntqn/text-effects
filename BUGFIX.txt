@@ -1,0 +1,21 @@
+BUG FIX - Privacy Crash Issue
+================================
+
+ISSUE: App crashed with "NSPhotoLibraryAddUsageDescription" error
+
+ROOT CAUSE: Missing privacy usage descriptions in Info.plist
+
+SOLUTION: Added privacy keys to project.pbxproj
+- INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription
+- INFOPLIST_KEY_NSPhotoLibraryUsageDescription
+
+STATUS: ✅ FIXED
+
+Build: SUCCESS
+Install: SUCCESS
+App should now run without privacy crashes
+
+OTHER WARNINGS (Non-critical):
+- eligibility.plist: System file, can be ignored
+- Layout constraints: iOS keyboard system warnings, harmless
+- RTIInputSystemClient: System warning, doesn't affect functionality
