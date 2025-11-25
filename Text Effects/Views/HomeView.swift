@@ -40,6 +40,43 @@ struct HomeView: View {
                     ThemePickerView(themeManager: themeManager)
                         .padding(.horizontal)
                     
+                    // Sticker Creator Button
+                    NavigationLink {
+                        StickerEditorView()
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Sticker Creator")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                Text("Create animated stickers & GIFs")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "face.smiling")
+                                .font(.title2)
+                                .symbolEffect(.bounce, value: themeManager.currentTheme)
+                        }
+                        .padding()
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    Color.orange,
+                                    Color.pink
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: Color.orange.opacity(0.3), radius: 10, y: 5)
+                    }
+                    .padding(.horizontal)
+                    
                     // Advanced Editor Button
                     NavigationLink {
                         AdvancedEditorView(themeManager: themeManager)

@@ -1,0 +1,100 @@
+ANIMATION EXPORT FIX
+====================
+
+PROBLEM
+-------
+- Video export showed static text (no Bounce animation)
+- GIF export not working properly
+- ImageRenderer was capturing single snapshot
+
+ROOT CAUSE
+----------
+1. Animation views used @State with .onAppear triggers
+2. ImageRenderer captures view at single moment
+3. No continuous time-based updates for renderer to capture
+
+SOLUTION
+--------
+Changed all animated text views to use TimelineView:
+
+1. BounceTextView
+   - OLD: @State + .onAppear + .repeatForever
+   - NEW: TimelineView with sin(timeline.date) for continuous bounce
+   - Formula: sin(time * 2 + index * 0.3) * 10
+
+2. WaveTextView
+   - OLD: @State + .onAppear + .repeatForever
+   - NEW: TimelineView with sin(timeline.date) for wave motion
+   - Formula: sin(time * 2 + index * 0.5) * 8
+
+3. GlowTextView
+   - OLD: @State + .onAppear + shadow animation
+   - NEW: TimelineView with dynamic shadow radius
+   - Formula: 5 + sin(time * 3) * 8
+
+4. RainbowTextView
+   - OLD: @State + withAnimation + hueRotation
+   - NEW: TimelineView with continuous rotation
+   - Formula: (time % 3) / 3 * 360
+
+5. Export Timing
+   - Moved Task.sleep BEFORE rendering (not after)
+   - Allows animation to update before capture
+   - Fresh ImageRenderer for each frame
+
+HOW IT WORKS NOW
+----------------
+1. TimelineView updates continuously based on system time
+2. Each frame render captures current animation state
+3. Task.sleep allows time to pass between frames
+4. ImageRenderer sees different animation positions
+5. GIF/Video captures smooth animation
+
+TECHNICAL DETAILS
+-----------------
+- TimelineView(.animation): Updates every frame
+- timeline.date.timeIntervalSinceReferenceDate: Current time
+- sin() function: Creates smooth oscillation
+- Fresh renderer per frame: No caching issues
+- autoreleasepool: Memory management
+
+FILES MODIFIED
+--------------
+1. AnimatedTextView.swift
+   - BounceTextView: TimelineView implementation
+   - WaveTextView: TimelineView implementation
+   - GlowTextView: TimelineView implementation
+   - RainbowTextView: TimelineView implementation
+
+2. StickerExportManager.swift
+   - exportAsGIF: Sleep before render
+   - exportAsAPNG: Sleep before render
+
+3. ExportManager.swift
+   - exportAsVideo: Already had sleep timing
+
+TESTING
+-------
+To verify fix:
+1. Open Sticker Creator
+2. Enter text: "Hello!"
+3. Select effect: Bounce
+4. Export as GIF
+5. Check Photos app
+6. GIF should show bouncing animation
+
+Expected Results:
+✅ Bounce: Characters bounce up/down
+✅ Wave: Characters wave smoothly
+✅ Glow: Shadow pulses in/out
+✅ Rainbow: Colors rotate continuously
+✅ Video: Shows full animation
+✅ GIF: Shows full animation
+
+BUILD STATUS
+------------
+✅ Build successful
+✅ No errors
+✅ No warnings
+✅ All animations now time-based
+✅ Export captures live animation

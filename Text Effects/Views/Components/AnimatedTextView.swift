@@ -37,24 +37,18 @@ struct AnimatedTextView: View {
 struct BounceTextView: View {
     let text: String
     let color: Color
-    @State private var bounce = false
+    @State private var animationTime: TimeInterval = 0
     
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(Array(text.enumerated()), id: \.offset) { index, character in
-                Text(String(character))
-                    .foregroundStyle(color)
-                    .offset(y: bounce ? -10 : 0)
-                    .animation(
-                        .spring(response: 0.3, dampingFraction: 0.5)
-                        .delay(Double(index) * 0.05)
-                        .repeatForever(autoreverses: true),
-                        value: bounce
-                    )
+        TimelineView(.animation) { timeline in
+            HStack(spacing: 0) {
+                ForEach(Array(text.enumerated()), id: \.offset) { index, character in
+                    let offset = sin(timeline.date.timeIntervalSinceReferenceDate * 2 + Double(index) * 0.3) * 10
+                    Text(String(character))
+                        .foregroundStyle(color)
+                        .offset(y: offset)
+                }
             }
-        }
-        .onAppear {
-            bounce = true
         }
     }
 }
@@ -62,24 +56,17 @@ struct BounceTextView: View {
 struct WaveTextView: View {
     let text: String
     let color: Color
-    @State private var wave = false
     
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(Array(text.enumerated()), id: \.offset) { index, character in
-                Text(String(character))
-                    .foregroundStyle(color)
-                    .offset(y: wave ? sin(Double(index) * 0.5) * 10 : 0)
-                    .animation(
-                        .easeInOut(duration: 2)
-                        .delay(Double(index) * 0.05)
-                        .repeatForever(autoreverses: true),
-                        value: wave
-                    )
+        TimelineView(.animation) { timeline in
+            HStack(spacing: 0) {
+                ForEach(Array(text.enumerated()), id: \.offset) { index, character in
+                    let offset = sin(timeline.date.timeIntervalSinceReferenceDate * 2 + Double(index) * 0.5) * 8
+                    Text(String(character))
+                        .foregroundStyle(color)
+                        .offset(y: offset)
+                }
             }
-        }
-        .onAppear {
-            wave = true
         }
     }
 }
@@ -87,20 +74,14 @@ struct WaveTextView: View {
 struct GlowTextView: View {
     let text: String
     let color: Color
-    @State private var glow = false
     
     var body: some View {
-        Text(text)
-            .foregroundStyle(color)
-            .shadow(color: color.opacity(glow ? 0.8 : 0.3), radius: glow ? 20 : 5)
-            .animation(
-                .easeInOut(duration: 1.5)
-                .repeatForever(autoreverses: true),
-                value: glow
-            )
-            .onAppear {
-                glow = true
-            }
+        TimelineView(.animation) { timeline in
+            let glowRadius = 5 + sin(timeline.date.timeIntervalSinceReferenceDate * 3) * 8
+            Text(text)
+                .foregroundStyle(color)
+                .shadow(color: color, radius: glowRadius)
+        }
     }
 }
 
@@ -134,26 +115,19 @@ struct TypewriterTextView: View {
 
 struct RainbowTextView: View {
     let text: String
-    @State private var hueRotation = 0.0
     
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(Array(text.enumerated()), id: \.offset) { index, character in
-                Text(String(character))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.red, .orange, .yellow, .green, .blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+        TimelineView(.animation) { timeline in
+            let rotation = timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 3) / 3 * 360
+            Text(text)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.red, .orange, .yellow, .green, .blue, .purple],
+                        startPoint: .leading,
+                        endPoint: .trailing
                     )
-                    .hueRotation(Angle(degrees: hueRotation + Double(index) * 20))
-            }
-        }
-        .onAppear {
-            withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
-                hueRotation = 360
-            }
+                )
+                .hueRotation(Angle(degrees: rotation))
         }
     }
 }

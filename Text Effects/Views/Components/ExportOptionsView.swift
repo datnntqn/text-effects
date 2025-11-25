@@ -248,8 +248,7 @@ struct ExportOptionsView: View {
                 if let videoURL = await exportManager.exportAsVideo(
                     view: previewView,
                     duration: videoDuration,
-                    size: videoQuality.size,
-                    fps: 30
+                    quality: videoQuality
                 ) {
                     try await exportManager.saveVideoToPhotos(videoURL)
                     showSuccessAlert = true
@@ -283,8 +282,7 @@ struct ExportOptionsView: View {
             if let videoURL = await exportManager.exportAsVideo(
                 view: previewView,
                 duration: videoDuration,
-                size: videoQuality.size,
-                fps: 30
+                quality: videoQuality
             ) {
                 onShare(ShareItem(url: videoURL))
                 dismiss()

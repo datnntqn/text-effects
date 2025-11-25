@@ -24,13 +24,26 @@ struct ContentItem: Identifiable, Hashable {
     }
 }
 
-enum TextEffectType: String, CaseIterable {
+enum TextEffectType: String, CaseIterable, Identifiable {
     case none = "None"
     case bounce = "Bounce"
     case wave = "Wave"
     case glow = "Glow"
     case typewriter = "Typewriter"
     case rainbow = "Rainbow"
+    
+    var id: String { rawValue }
+    
+    var icon: String {
+        switch self {
+        case .none: return "text.alignleft"
+        case .bounce: return "arrow.up.and.down.circle"
+        case .wave: return "waveform"
+        case .glow: return "sparkles"
+        case .typewriter: return "keyboard"
+        case .rainbow: return "paintpalette"
+        }
+    }
     
     var displayName: String {
         rawValue

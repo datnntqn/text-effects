@@ -24,7 +24,15 @@ A modern iOS 18 application demonstrating advanced SwiftUI features including Zo
 - **Layout Controls**: Padding, alignment, and spacing adjustments
 - **Multiple Effects**: Stack and combine visual effects
 
-### 🎨 Text Effects
+### � Sticker & Animation Export
+- **Multiple Formats**: GIF, APNG, MP4, WebP support
+- **Aspect Ratios**: Square (1:1), Portrait (9:16), Landscape (16:9), Story, Chat
+- **Platform Optimization**: WhatsApp, Telegram, Instagram, iMessage presets
+- **Transparent Backgrounds**: Checkerboard preview for transparency
+- **Animated Stickers**: Export text effects as animated stickers
+- **Duration Control**: 1-5 seconds animation length
+
+### � Text Effects
 1. **Bounce**: Playful bouncing animation for each character
 2. **Wave**: Smooth wave motion across the text
 3. **Glow**: Beautiful glowing effect with pulsing shadows
@@ -146,15 +154,20 @@ class ThemeManager {
 ## Completed Features
 
 - [x] iOS 18 Zoom Transitions
-- [x] 5 Text Effects (Bounce, Wave, Glow, Typewriter, Rainbow)
+- [x] 6 Text Effects (None, Bounce, Wave, Glow, Typewriter, Rainbow)
 - [x] Dynamic Theming (5 themes)
 - [x] Advanced Text Editor
 - [x] Export as Image (PNG, up to 4K)
 - [x] Export as Video (MP4, up to 4K)
+- [x] Export as GIF (animated)
+- [x] Export as APNG (animated PNG)
 - [x] Share to Social Media
 - [x] Template System (6 presets)
 - [x] Custom Template Saving
 - [x] Professional Styling Controls
+- [x] Sticker Creator with aspect ratios
+- [x] Transparent background support
+- [x] Platform-specific optimization
 
 ## Future Enhancements
 
